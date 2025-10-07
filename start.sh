@@ -35,25 +35,23 @@ echo "Starting Django Backend + React Frontend"
 
 # Start backend - Django
 print_header "Starting Django Backend"
-cd CRO-Backend
+cd CRO-Backend/CroBackend
 
-# Check for Django
-if [ -f "requirements.txt" ] || [ -f "manage.py" ]; then
-    print_info "Django backend detected"
+# Check for Django in the correct subdirectory
+if [ -f "manage.py" ] && [ -f "requirements.txt" ]; then
+    print_info "Django backend detected in CRO-Backend/CroBackend/"
 
     # Install Python dependencies
     print_info "Installing Python dependencies..."
     pip install -r requirements.txt
 
     # Run database migrations
-    if [ -f "manage.py" ]; then
-        print_info "Running database migrations..."
-        python manage.py migrate --noinput
+    print_info "Running database migrations..."
+    python manage.py migrate --noinput
 
-        # Collect static files
-        print_info "Collecting static files..."
-        python manage.py collectstatic --noinput
-    fi
+    # Collect static files
+    print_info "Collecting static files..."
+    python manage.py collectstatic --noinput
 
     # Start Django development server
     print_info "Starting Django server..."
@@ -63,13 +61,17 @@ if [ -f "requirements.txt" ] || [ -f "manage.py" ]; then
     print_success "Django backend starting on port ${PORT:-8000}"
 
 else
-    print_error "Could not find Django backend (no manage.py or requirements.txt)"
+    print_error "Could not find Django backend files"
+    echo "Looking for: CRO-Backend/CroBackend/manage.py and requirements.txt"
+    echo "Current directory: $(pwd)"
+    echo "Files found:"
+    ls -la
     exit 1
 fi
 
 # Start frontend - React
 print_header "Starting React Frontend"
-cd ../cro-phase2-frontend
+cd ../../cro-phase2-frontend
 
 if [ -f "package.json" ]; then
     print_info "React frontend detected"
@@ -79,7 +81,7 @@ if [ -f "package.json" ]; then
     npm install
 
     # Check if we should build for production or run dev server
-    if [ "$RAILPACK_ENV" = "production" ] || [ ! -z "$NODE_ENV" ]; then
+    if [ "$RAILPACK_ENV" = "production" ] || [ "$NODE_ENV" = "production" ]; then
         print_info "Building React app for production..."
         npm run build
 
@@ -99,6 +101,9 @@ if [ -f "package.json" ]; then
 
 else
     print_error "Could not find React frontend (no package.json)"
+    echo "Current directory: $(pwd)"
+    echo "Files found:"
+    ls -la
     exit 1
 fi
 
@@ -109,6 +114,8 @@ echo ""
 echo "Services starting up..."
 echo "Backend API: http://localhost:${PORT:-8000}"
 echo "Frontend: http://localhost:3000"
+echo ""
+echo "Use 'ps aux' to check running processes"
 
 # Wait for both processes
 print_header "Monitoring Services"
