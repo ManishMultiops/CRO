@@ -1,0 +1,118 @@
+version: "3.8"
+
+# CRO Phase 2 - Combined Docker Compose Configuration
+# This file runs both the frontend and backend services together
+
+services:
+  frontend:
+    build:
+      context: ./cro-phase2-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    volumes:
+      - ./cro-phase2-frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      # For development, API requests are proxied through Nginx
+      - REACT_APP_API_URL=/api
+      # If needed for direct API access in some components:
+      - REACT_APP_DIRECT_API_URL=http://backend:8000
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - cro-network
+
+  db:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=cro_db
+      - POSTGRES_USER=cro_user
+      - POSTGRES_PASSWORD=postgres
+      # Add these for consistency with the frontend environment
+      - DATABASE_NAME=cro_db
+      - DATABASE_USER=cro_user
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cro_user -d cro_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - cro-network
+
+  backend:
+    build:
+      context: ./CRO-Backend/CroBackend
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./CRO-Backend/CroBackend:/app
+      - ./CRO-Backend/CroBackend/database_settings.py:/app/CroBackend/database_settings_override.py
+      - static_volume:/app/static
+      - media_volume:/app/media
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-key-for-development-only
+      # Use consistent variable names for database
+      - DB_NAME=cro_db
+      - DB_USER=cro_user
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      # Add an environment variable to import custom settings
+      - DJANGO_SETTINGS_MODULE=CroBackend.settings
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - ./CRO-Backend/CroBackend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - cro-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8000"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    # Use the startup script for initialization and server start
+    command: >
+      bash -c "
+      chmod +x /app/startup.sh &&
+      /app/startup.sh
+      "
+
+networks:
+  cro-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
