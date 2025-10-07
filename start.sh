@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# CRO Phase 2 Full-Stack Restart Script
-# This script performs a complete restart of the CRO Phase 2 stack,
-# with proper error handling and sequential service startup
+# CRO Phase 2 Full-Stack Start Script for Railpack
+# This script starts the applications directly without Docker
 
 # Set up colors for better readability
 RED='\033[0;31m'
@@ -26,156 +25,88 @@ print_error() {
   echo -e "${RED}✗ $1${NC}"
 }
 
-# Function to print informational messages
-print_info() {
-  echo -e "${BLUE}$1${NC}"
-}
+print_header "CRO Phase 2 Full-Stack Start"
+echo "Starting applications directly (Railpack environment)"
 
-# Function to handle script exit
+# Install dependencies and start backend
+print_header "Starting Backend Service"
+cd CRO-Backend
+
+# Detect backend type and start accordingly
+if [ -f "package.json" ]; then
+    print_info "Node.js backend detected"
+    npm install
+    # Use Railpack's provided PORT or default to 5000
+    PORT=${PORT:-5000} npm start &
+    BACKEND_PID=$!
+    print_success "Backend starting on port ${PORT:-5000}"
+
+elif [ -f "requirements.txt" ]; then
+    print_info "Python backend detected"
+    pip install -r requirements.txt
+    python app.py &
+    BACKEND_PID=$!
+    print_success "Python backend starting"
+
+elif [ -f "pom.xml" ]; then
+    print_info "Java backend detected"
+    mvn spring-boot:run &
+    BACKEND_PID=$!
+    print_success "Java backend starting"
+
+else
+    print_error "Could not determine backend type"
+    exit 1
+fi
+
+# Install dependencies and start frontend
+print_header "Starting Frontend Service"
+cd ../cro-phase2-frontend
+
+if [ -f "package.json" ]; then
+    print_info "Node.js frontend detected"
+    npm install
+
+    # Check if it's a production build or development server
+    if [ -f "build" ] || [ -d "dist" ]; then
+        # Production build exists - serve static files
+        npm install -g serve
+        serve -s build -l 3000 &
+        FRONTEND_PID=$!
+        print_success "Frontend serving production build on port 3000"
+    else
+        # Development mode
+        PORT=3000 npm start &
+        FRONTEND_PID=$!
+        print_success "Frontend starting in development mode on port 3000"
+    fi
+else
+    print_error "Could not determine frontend type"
+    exit 1
+fi
+
+print_header "Application Status"
+echo "Backend PID: $BACKEND_PID"
+echo "Frontend PID: $FRONTEND_PID"
+echo ""
+echo "Applications are starting up..."
+echo "They should be available shortly."
+
+# Wait for both processes
+print_header "Monitoring Services"
+echo "Press Ctrl+C to stop all services"
+
+# Function to cleanup processes on exit
 cleanup() {
-  echo ""
-  print_header "Cleaning up"
-  print_info "Script interrupted. Shutting down any running containers..."
-  docker-compose down --remove-orphans
-  echo ""
-  exit 1
+    echo ""
+    print_header "Shutting down services"
+    kill $BACKEND_PID 2>/dev/null
+    kill $FRONTEND_PID 2>/dev/null
+    print_success "All services stopped"
+    exit 0
 }
 
-# Trap Ctrl+C to enable clean shutdown
 trap cleanup SIGINT
 
-print_header "CRO Phase 2 Full-Stack Restart"
-print_info "This script will restart the entire CRO Phase 2 stack (frontend, backend, and database)"
-
-# Check if Docker is running
-print_header "Checking prerequisites"
-if ! docker info > /dev/null 2>&1; then
-  print_error "Docker is not running. Please start Docker and try again."
-  exit 1
-fi
-print_success "Docker is running"
-
-# Check if docker-compose is available
-if ! command -v docker-compose > /dev/null 2>&1; then
-  print_error "docker-compose is not installed or not in PATH"
-  exit 1
-fi
-print_success "docker-compose is available"
-
-# Stop any running containers
-print_header "Stopping all services"
-print_info "Stopping all containers..."
-docker-compose down --remove-orphans
-
-# Make scripts executable
-print_header "Preparing scripts"
-print_info "Setting executable permissions on scripts..."
-chmod +x CRO-Backend/CroBackend/startup.sh 2>/dev/null || true
-print_success "Scripts prepared"
-
-# Remove stale volumes if requested
-read -p "Do you want to remove database volumes and start fresh? (y/N): " remove_volumes
-if [[ "$remove_volumes" =~ ^[Yy]$ ]]; then
-  print_header "Removing volumes"
-  print_info "Removing database volumes..."
-  docker-compose down -v
-  print_success "Volumes removed"
-fi
-
-# Build images
-print_header "Building images"
-print_info "Building all services..."
-docker-compose build
-
-if [ $? -ne 0 ]; then
-  print_error "Build failed! Please check the error messages above."
-  exit 1
-fi
-print_success "Images built successfully"
-
-# Start the database first
-print_header "Starting database service"
-print_info "Starting PostgreSQL container..."
-docker-compose up -d db
-
-if [ $? -ne 0 ]; then
-  print_error "Failed to start database container!"
-  exit 1
-fi
-print_success "Database container started"
-
-# Wait for database to be ready
-print_info "Waiting for database to initialize (15s)..."
-for i in {1..15}; do
-  echo -n "."
-  sleep 1
-done
-echo ""
-
-# Start the backend
-print_header "Starting backend service"
-print_info "Starting backend container..."
-docker-compose up -d backend
-
-if [ $? -ne 0 ]; then
-  print_error "Failed to start backend container!"
-  exit 1
-fi
-
-# Check if backend is healthy
-print_info "Waiting for backend to become ready..."
-retries=0
-max_retries=30
-while [ $retries -lt $max_retries ]; do
-  if docker-compose ps | grep backend | grep -q "(healthy)"; then
-    break
-  fi
-  echo -n "."
-  sleep 2
-  retries=$((retries + 1))
-done
-echo ""
-
-if [ $retries -ge $max_retries ]; then
-  print_info "Backend may not be fully healthy yet, but continuing..."
-else
-  print_success "Backend is ready"
-fi
-
-# Start the frontend
-print_header "Starting frontend service"
-print_info "Starting frontend container..."
-docker-compose up -d frontend
-
-if [ $? -ne 0 ]; then
-  print_error "Failed to start frontend container!"
-  exit 1
-fi
-print_success "Frontend container started"
-
-# Check the status of all services
-print_header "Service status"
-docker-compose ps
-
-# Print success message and URLs
-print_header "Startup complete"
-print_success "All services have been started successfully!"
-echo ""
-echo "You can access your applications at:"
-echo "• Frontend: http://localhost:80"
-echo "• Backend API: http://localhost:8000"
-echo ""
-echo "To view logs: docker-compose logs -f [service]"
-echo "Available services: frontend, backend, db"
-echo ""
-echo "To stop all services: docker-compose down"
-
-# Ask if user wants to tail logs
-read -p "Do you want to view the logs? (y/N): " view_logs
-if [[ "$view_logs" =~ ^[Yy]$ ]]; then
-  print_header "Service logs"
-  print_info "Showing logs (press Ctrl+C to exit)..."
-  docker-compose logs -f
-fi
-
-exit 0
+# Wait for processes
+wait $BACKEND_PID $FRONTEND_PID
