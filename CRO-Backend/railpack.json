@@ -1,0 +1,9 @@
+{
+  "name": "cro-backend",
+  "build": {
+    "command": "cd CRO-Backend/CroBackend && pip install -r requirements.txt"
+  },
+  "start": {
+    "command": "cd CRO-Backend/CroBackend && python manage.py runserver 0.0.0.0:$PORT"
+  }
+}
