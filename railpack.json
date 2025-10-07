@@ -1,0 +1,8 @@
+{
+  "build": {
+    "command": "echo 'Building application...'"
+  },
+  "start": {
+    "command": "./start.sh"
+  }
+}
