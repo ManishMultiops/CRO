@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=cro_db
+      - POSTGRES_USER=cro_user
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cro_user -d cro_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: always
+    volumes:
+      - ./:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-key-for-development-only
+      - DB_NAME=cro_db
+      - DB_USER=cro_user
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8000}:8000"
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

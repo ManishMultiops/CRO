@@ -1,0 +1,484 @@
+/* Main Container */
+.document-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background: #ffffff;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+}
+
+/* Main Content Area */
+.file-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    padding: 0 24px;
+    overflow: hidden;
+    height: 100vh;
+    margin-left: 0;
+}
+
+.file-header {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.file-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-img {
+    width: 50px;
+    height: 50px;
+}
+
+.file-icon {
+    font-size: 24px;
+}
+
+.file-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.file-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.white-button {
+    background-color: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.white-button:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.gradient-button {
+    background: linear-gradient(135deg, #2f46bc, #e43d54);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.gradient-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.cloud-icon {
+    font-size: 16px;
+}
+
+/* File Content */
+.file-content {
+    flex: 1;
+    background: #ffffff;
+    overflow-y: auto;
+    height: calc(100vh - 110px); /* Subtract header height */
+    padding-bottom: 30px;
+    scrollbar-width: thin;
+    width: 100%;
+}
+
+.tabs {
+    display: flex;
+    height: 50px;
+    gap: 32px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+    background: none;
+    border: none;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: #000000;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+    color: #374151;
+}
+
+.tab.active {
+    color: #000000;
+    font-weight: 400;
+    border-bottom-color: transparent;
+    background-image: linear-gradient(135deg, #2f46bc, #e43d54);
+    background-size: 100% 3px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+}
+
+.file-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.sort-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: -100px;
+    border: none;
+}
+
+.sort-dropdown label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+    border: none;
+}
+
+.sort-dropdown select {
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #374151;
+    background: white;
+    cursor: pointer;
+    border: none;
+}
+
+/* Files Grid */
+.files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    align-items: start;
+    width: 100%;
+    padding: 10px 0;
+}
+
+.file-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    width: 100%;
+    height: 220px;
+    max-width: 240px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.file-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+}
+
+.file-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.file-card-file {
+    width: 100%;
+    max-width: 100%;
+    height: 128px;
+    background-color: #f3f4f6;
+    border: 1px solid #f3f4f6;
+    margin: 0 auto;
+}
+
+.generated-badge {
+    border: none;
+    color: #df3e58;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.generated-upload {
+    border: 1px solid #e5e7eb;
+    color: #1e40af;
+    padding: 4px 8px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.file-options {
+    color: #9ca3af;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    position: relative;
+    display: inline-block;
+}
+
+.file-options:hover {
+    color: #6b7280;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 150px;
+    z-index: 100;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #374151;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f4f6;
+}
+
+.download-item {
+    color: #2563eb;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.delete-item {
+    color: #ef4444;
+}
+
+.file-card:not(:hover) .dropdown-menu {
+    display: none;
+}
+
+.loading-spinner-sm {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+    font-size: 16px;
+}
+
+.processing {
+    position: relative;
+}
+
+.processing::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    z-index: 5;
+}
+
+.download-item:hover,
+.delete-item:hover {
+    background-color: #f9fafb;
+}
+
+.download-icon {
+    font-size: 16px;
+    color: #2563eb;
+}
+
+.delete-icon {
+    font-size: 16px;
+    color: #ef4444;
+}
+
+.file-icon-large {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+    margin-bottom: 16px;
+}
+
+.excel-icon,
+.image-icon {
+    font-size: 32px;
+}
+
+.excel-icon {
+    color: #16a34a;
+}
+
+.image-icon {
+    color: #6b7280;
+}
+
+.file-info {
+    text-align: center;
+}
+
+.file-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    width: 100%;
+    margin: 20px auto 0;
+}
+.threedot {
+    width: 24px;
+    height: 24px;
+}
+.file-time {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.loading-message,
+.no-files-message {
+    grid-column: 1 / -1;
+    padding: 40px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px dashed #e5e7eb;
+    margin: 20px 0;
+    width: 100%;
+}
+
+.error-message {
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.loading-indicator {
+    display: inline-block;
+    font-size: 14px;
+    color: #6b7280;
+    margin-left: 10px;
+    animation: pulse 1.5s infinite ease-in-out;
+    position: absolute;
+    right: 0;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.csv-icon {
+    font-size: 32px;
+    color: #3b82f6;
+}
+
+.txt-icon {
+    font-size: 32px;
+    color: #6366f1;
+}
+
+.default-icon {
+    font-size: 32px;
+    color: #9ca3af;
+}
+
+.file-card:hover .file-options {
+    opacity: 1;
+}
+
+.file-options {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+    position: relative;
+}
+
+.file-card:hover .file-options {
+    opacity: 1;
+}
+
+.threedot {
+    cursor: pointer;
+}

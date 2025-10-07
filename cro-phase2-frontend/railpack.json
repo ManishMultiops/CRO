@@ -1,0 +1,9 @@
+{
+  "name": "cro-frontend",
+  "build": {
+    "command": "cd cro-phase2-frontend && npm install && npm run build"
+  },
+  "start": {
+    "command": "cd cro-phase2-frontend && npm start"
+  }
+}
