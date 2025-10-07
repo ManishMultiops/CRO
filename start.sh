@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CRO Phase 2 Full-Stack Start Script for Railpack
-# This script starts the applications directly without Docker
+# Django Backend + React Frontend
 
 # Set up colors for better readability
 RED='\033[0;31m'
@@ -25,72 +25,90 @@ print_error() {
   echo -e "${RED}✗ $1${NC}"
 }
 
-print_header "CRO Phase 2 Full-Stack Start"
-echo "Starting applications directly (Railpack environment)"
+# Function to print informational messages
+print_info() {
+  echo -e "${BLUE}$1${NC}"
+}
 
-# Install dependencies and start backend
-print_header "Starting Backend Service"
+print_header "CRO Phase 2 Full-Stack Start"
+echo "Starting Django Backend + React Frontend"
+
+# Start backend - Django
+print_header "Starting Django Backend"
 cd CRO-Backend
 
-# Detect backend type and start accordingly
-if [ -f "package.json" ]; then
-    print_info "Node.js backend detected"
-    npm install
-    # Use Railpack's provided PORT or default to 5000
-    PORT=${PORT:-5000} npm start &
-    BACKEND_PID=$!
-    print_success "Backend starting on port ${PORT:-5000}"
+# Check for Django
+if [ -f "requirements.txt" ] || [ -f "manage.py" ]; then
+    print_info "Django backend detected"
 
-elif [ -f "requirements.txt" ]; then
-    print_info "Python backend detected"
+    # Install Python dependencies
+    print_info "Installing Python dependencies..."
     pip install -r requirements.txt
-    python app.py &
-    BACKEND_PID=$!
-    print_success "Python backend starting"
 
-elif [ -f "pom.xml" ]; then
-    print_info "Java backend detected"
-    mvn spring-boot:run &
+    # Run database migrations
+    if [ -f "manage.py" ]; then
+        print_info "Running database migrations..."
+        python manage.py migrate --noinput
+
+        # Collect static files
+        print_info "Collecting static files..."
+        python manage.py collectstatic --noinput
+    fi
+
+    # Start Django development server
+    print_info "Starting Django server..."
+    # Use Railpack's PORT or default to 8000 for Django
+    python manage.py runserver 0.0.0.0:${PORT:-8000} &
     BACKEND_PID=$!
-    print_success "Java backend starting"
+    print_success "Django backend starting on port ${PORT:-8000}"
 
 else
-    print_error "Could not determine backend type"
+    print_error "Could not find Django backend (no manage.py or requirements.txt)"
     exit 1
 fi
 
-# Install dependencies and start frontend
-print_header "Starting Frontend Service"
+# Start frontend - React
+print_header "Starting React Frontend"
 cd ../cro-phase2-frontend
 
 if [ -f "package.json" ]; then
-    print_info "Node.js frontend detected"
+    print_info "React frontend detected"
+
+    # Install Node.js dependencies
+    print_info "Installing Node.js dependencies..."
     npm install
 
-    # Check if it's a production build or development server
-    if [ -f "build" ] || [ -d "dist" ]; then
-        # Production build exists - serve static files
+    # Check if we should build for production or run dev server
+    if [ "$RAILPACK_ENV" = "production" ] || [ ! -z "$NODE_ENV" ]; then
+        print_info "Building React app for production..."
+        npm run build
+
+        # Serve the built files
+        print_info "Serving production build..."
         npm install -g serve
         serve -s build -l 3000 &
         FRONTEND_PID=$!
-        print_success "Frontend serving production build on port 3000"
+        print_success "React frontend serving production build on port 3000"
     else
-        # Development mode
+        print_info "Starting React development server..."
+        # Use a different port for frontend development
         PORT=3000 npm start &
         FRONTEND_PID=$!
-        print_success "Frontend starting in development mode on port 3000"
+        print_success "React frontend starting in development mode on port 3000"
     fi
+
 else
-    print_error "Could not determine frontend type"
+    print_error "Could not find React frontend (no package.json)"
     exit 1
 fi
 
 print_header "Application Status"
-echo "Backend PID: $BACKEND_PID"
-echo "Frontend PID: $FRONTEND_PID"
+echo "Backend (Django) PID: $BACKEND_PID"
+echo "Frontend (React) PID: $FRONTEND_PID"
 echo ""
-echo "Applications are starting up..."
-echo "They should be available shortly."
+echo "Services starting up..."
+echo "Backend API: http://localhost:${PORT:-8000}"
+echo "Frontend: http://localhost:3000"
 
 # Wait for both processes
 print_header "Monitoring Services"
